@@ -24,7 +24,10 @@ object Main {
       1     13    71    209   351   321   127   1
    1     15    97    351   769   1023  769   255   1
    */
-  def ppascal(r: Int, c: Int): Int = ???
+  def ppascal(r: Int, c: Int): Int = {
+    if(c==0 || c==r) 1
+    else 2*ppascal(r-1,c-1) + ppascal(r-1,c)
+  }
 
   /*
    Exercise 2: Fibonacci
@@ -32,7 +35,10 @@ object Main {
    Having exponential time complexity is OK for this problem.
    You may assume 1 <= n <= 20.
    */
-  def fibA(n: Int): Int = ???
+  def fibA(n: Int): Int = {
+    if(n==1 || n==2) 1
+    else fibA(n-1) + fibA(n-2)
+  }
 
   /*
    B) Same with a), but you should implement it faster.
@@ -53,13 +59,13 @@ object Main {
      and get n'th element with "._n".
      */
     def _fibB(n: Int): (BigInt, BigInt) = {
-      if(???) ???
+      if(n==1 || n==2) (1,1)
       else {
         val (pastPast, past) = _fibB(n - 1)
-        ???
+        (past,pastPast + past)
       }
     }
-    ???
+    _fibB(n)._2
   }
 
   /*
@@ -77,7 +83,10 @@ object Main {
      output := n'th Fibonacci number
      */
     @tailrec
-    def _fibC(idx: Int, current: BigInt, past: BigInt): BigInt = ???
-    ???
+    def _fibC(idx: Int, current: BigInt, past: BigInt): BigInt = {
+      if(idx==n) current
+      else _fibC(idx+1,current+past,current)
+    }
+    _fibC(2,1,1)
   }
 }

@@ -36,9 +36,15 @@ object Main {
 
   def emptyStk[A] = MyNil[A]()
 
-  def push[A](stk: Stack[A])(a: A): Stack[A] = ??? // stk
+  def push[A](stk: Stack[A])(a: A): Stack[A] = stk match{
+    case MyNil() => MyCons[A](a,MyNil())
+    case someList => MyCons[A](a,someList)
+  }
 
-  def pop[A](stk: Stack[A]): Option[(A, Stack[A])] = ??? // stk
+  def pop[A](stk: Stack[A]): Option[(A, Stack[A])] = stk match{
+    case MyNil() => None
+    case MyCons(hd,tl) => Some[(A,Stack[A])]((hd,tl))
+  }
 
   def pushList[A](seed: Stack[A])(as: List[A]): Stack[A] =
      as.foldLeft(seed)((stk, a) => push(stk)(a))
@@ -54,13 +60,27 @@ object Main {
    */
   def emptyQ[A] = (emptyStk[A], emptyStk[A])
 
-  def enQ[A](q: Queue[A])(a: A): Queue[A] = ??? // q
+  def enQ[A](q: Queue[A])(a: A): Queue[A] = (push[A](q._1)(a),q._2)
 
   def enQList[A](seed: Queue[A])(as: List[A]): Queue[A] =
      as.foldLeft(seed)((q, a) => enQ(q)(a))
 
-  def deQ[A](q: Queue[A]): Option[(A, Queue[A])] = ??? // None
-
+  def deQ[A](q: Queue[A]): Option[(A, Queue[A])] ={
+    def moveEleFromOneToAnother[A](stk1:Stack[A])(stk2:Stack[A]):Queue[A] = stk1 match{
+      case MyNil() => (stk1,stk2)
+      case MyCons(hd,tl) => moveEleFromOneToAnother[A](tl)(MyCons(hd,stk2))
+    }
+    def popEleFromQueue[A](modifiedQueue:Queue[A]):Option[(A,Queue[A])] = modifiedQueue match{
+      case (MyNil(),MyNil()) => None
+      case (MyNil(),MyCons(hd,tl)) => Some[(A,Queue[A])](hd,(MyNil(),tl))
+      case (someList,otherList) => popEleFromQueue[A](moveEleFromOneToAnother(someList)(otherList))
+    }
+    q match{
+      case (MyNil(),MyNil()) => None
+      case (MyNil(),MyCons(hd,tl)) => Some[(A,Queue[A])]((hd,(MyNil(),tl)))
+      case (someList,otherList) => popEleFromQueue[A](moveEleFromOneToAnother(someList)(otherList))
+    }
+  }
   /*
    Exercise 2: Binary Search Tree
    Implement insert/lookup for Binary Search Tree.
@@ -85,13 +105,23 @@ object Main {
   def emptyBST[K, V]: BSTree[K, V] = Leaf()
 
   def insert[K, V]
-    (t: BSTree[K, V])(keyValue: (K, V))(cmp: K => K => Int): BSTree[K, V] = ??? // emptyBST
+    (t: BSTree[K, V])(keyValue: (K, V))(cmp: K => K => Int): BSTree[K, V] = t match{
+    case Leaf() => Node[(K,V)](keyValue,Leaf(),Leaf())
+    case Node(cmpTarget,left,right) if cmp(cmpTarget._1)(keyValue._1) == 0 => Node(keyValue,left,right)
+    case Node(cmpTarget,left,right) if cmp(cmpTarget._1)(keyValue._1) < 0 => insert[K,V](left)(keyValue)(cmp)
+    case Node(cmpTarget,left,right) => insert[K,V](right)(keyValue)(cmp)
+  }
 
   def insertList[K, V]
     (seed: BSTree[K, V])(keyValues: List[(K, V)])(cmp: K => K => Int) =
     keyValues.foldLeft(seed)((tree, keyValue) => insert(tree)(keyValue)(cmp))
 
-  def lookup[K, V](t: BSTree[K, V])(key: K)(cmp: K => K => Int): Option[V] = ??? // None
+  def lookup[K, V](t: BSTree[K, V])(key: K)(cmp: K => K => Int): Option[V] = t match{
+    case Leaf() => None
+    case Node(cmpTarget,left,right) if cmp(cmpTarget._1)(key) == 0 => Some[V](cmpTarget._2)
+    case Node(cmpTarget,left,right) if cmp(cmpTarget._1)(key) < 0 => lookup[K,V](left)(key)(cmp)
+    case Node(cmpTarget,left,right) => lookup[K,V](right)(key)(cmp)
+  }
 
   /*
    Exercise 3: Structural Sub Type
@@ -123,13 +153,24 @@ object Main {
      Find suitable common supertype of Ty1 and Ty2,
      and replace "Any" with that type.
      */
-    type CommonTy = Any // Any
+
+    type FuncCommonTy = {} => {val a:A; val b:B}
+
+
+    type CommonTy = {
+      def apply: {val func:FuncCommonTy; val c:C; val e:E} => {val b:B}
+      val a : A
+    }
 
     /*
      Fill in the apply function here.
      The answer should be in this form: x.apply(...)
      */
     def apply(x: CommonTy, _a: A, _b: B, _c: C, _d: D, _e: E, _f: F) =
-      ??? //0
+    x.apply(new {
+      val func:FuncCommonTy= (y:{}) => new {val a:A=_a;val b:B=_b}
+      val c:C = _c;
+      val e:E = _e
+    })
   }
 }

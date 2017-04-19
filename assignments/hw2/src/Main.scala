@@ -23,13 +23,22 @@ object Main {
    Exercise 1: IList Map
    Write a map function that applies the given function to all elements of the given IList.
    */
-  def map(xs: IList)(f: Int => Int): IList = ???
+  def map(xs: IList)(f: Int => Int): IList = xs match {
+    case INil() => INil()
+    case ICons(hd,tl) => ICons(f(hd),map(tl)(f))
+  }
 
   /*
    Exercise 2: IList Reverse
    Write a reverse function that reverses the order of the given IList.
    */
-  def reverse(xs: IList): IList = ???
+  def reverse(xs: IList): IList = {
+    def reverseIter(origin:IList)(newly:IList):IList = origin match{
+      case INil() => newly
+      case ICons(hd,tl) => reverseIter(tl)(ICons(hd,newly))
+    }
+    reverseIter(xs)(INil())
+  }
 
   /*
    Exercise 3: Exp Calculator
@@ -37,5 +46,10 @@ object Main {
    For each case class Add/Sub/Mul, you may interpret them as
    normal integer operators: +, -, *.
    */
-  def calculate(x: Exp): Int = ???
+  def calculate(x: Exp): Int = x match {
+    case EInt(i) => i
+    case EAdd(lhs,rhs) => calculate(lhs)+calculate(rhs)
+    case ESub(lhs,rhs) => calculate(lhs)-calculate(rhs)
+    case EMul(lhs,rhs) => calculate(lhs)*calculate(rhs)
+  }
 }
